@@ -3,6 +3,7 @@ package org.example.oa_3rdwave_internship_project.api;
 import org.example.oa_3rdwave_internship_project.database.DatabaseConn;
 import org.example.oa_3rdwave_internship_project.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,27 +20,21 @@ public class API_GET {
     private DatabaseConn dbc;
 
     @GetMapping("/hospitals")
-    public void getHospital(){
+    public ResponseEntity<List<Hospital>> getHospital(){
         List<Hospital> list = dbc.getAllHospitals();
-        for (Hospital h : list){
-            System.out.println(h);
-        }
+        return ResponseEntity.ok().body(list);
     }
 
     @GetMapping("/transactions")
-    public void getMedicalTransactions(){
+    public ResponseEntity<List<Medical_Transaction>> getMedicalTransactions(){
         List<Medical_Transaction> list = dbc.getAllMedicalTransactions();
-        for (Medical_Transaction h : list){
-            System.out.println(h);
-        }
+        return ResponseEntity.ok().body(list);
     }
 
     @GetMapping("/patients")
-    public void getPatients(){
+    public ResponseEntity<List<Patient>> getPatients(){
         List<Patient> list = dbc.getAllPatients();
-        for (Patient h : list){
-            System.out.println(h);
-        }
+        return ResponseEntity.ok().body(list);
     }
 
 }

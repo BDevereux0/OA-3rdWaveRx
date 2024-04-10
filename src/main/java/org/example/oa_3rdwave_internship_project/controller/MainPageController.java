@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/home")
 public class MainPageController {
 
-
+    @GetMapping
     public String firstTry(){
         return "home.html";
     }
