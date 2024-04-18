@@ -1,4 +1,4 @@
-package org.example.oa_3rdwave_internship_project.entities;
+package org.example.oa_3rdwave_internship_project.databaseEntities;
 
 import lombok.Data;
 

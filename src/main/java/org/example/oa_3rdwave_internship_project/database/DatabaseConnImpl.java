@@ -1,13 +1,12 @@
 package org.example.oa_3rdwave_internship_project.database;
 
-import org.example.oa_3rdwave_internship_project.entities.*;
+import org.example.oa_3rdwave_internship_project.databaseEntities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class DatabaseConnImpl implements DatabaseConn {

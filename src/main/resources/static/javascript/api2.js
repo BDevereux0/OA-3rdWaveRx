@@ -194,12 +194,153 @@ function removeTextBoxes() {
     const textBox2 = document.getElementById('textBox2');
     if (textBox1) textBox1.remove();
     if (textBox2) textBox2.remove();
+    const button = document.getElementById('submitButton');
+    if (button) button.remove();
 }
 
 // Enable table function
 function enableTable() {
     const table = document.getElementById('hospitalTable');
     if (table) table.style.display = 'table';
+}
+
+// Add event listener to "Gpt" link
+document.getElementById('linkGpt').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent default link behavior
+    // Remove the table
+    const table = document.getElementById('hospitalTable');
+    if (table) table.style.display = 'none';
+    // Add textboxes and button
+    addFormAndTextBoxes();
+    // Update flag
+    enableTextBox1();
+    // Add logic for button
+    submitButtonClickHandler();
+    isGptClicked = true;
+});
+
+// Enable textbox1 function
+function enableTextBox1() {
+    const textBox1 = document.getElementById('textBox1');
+    if (textBox1) textBox1.disabled = false;
+
+    // Enable the submit button
+    const button = document.getElementById('submitButton');
+    if (button) button.disabled = false;
+}
+
+// Add textboxes function
+function addFormAndTextBoxes() {
+    const form = document.createElement('form');
+    form.id = 'myForm';
+    form.addEventListener('submit', function (event){
+        event.preventDefault();
+        submitFormData();
+    })
+
+    // Create textboxes
+    const textBox1 = document.createElement('input');
+    textBox1.type = 'text';
+    textBox1.className = 'form-control mt-2';
+    textBox1.placeholder = 'Textbox 1';
+    textBox1.id = 'textBox1';
+
+
+
+    const textBox2 = document.createElement('input');
+    textBox2.type = 'text';
+    textBox2.className = 'form-control mt-2';
+    textBox2.placeholder = 'Textbox 2';
+    textBox2.id = 'textBox2';
+
+    // Add textboxes to the container
+    const container = document.querySelector('.col-md-9');
+    if (!container) return; // Exit if container is null
+    container.appendChild(textBox1);
+    container.appendChild(textBox2);
+
+    // Create button
+    const button = document.createElement('button');
+    button.textContent = 'Submit';
+    button.className = 'btn btn-primary mt-2';
+    button.id = 'submitButton';
+
+    // Add button to the container
+    container.appendChild(button);
+
+    // Disable textboxes and button initially
+    textBox1.disabled = true;
+    textBox2.disabled = true;
+    button.disabled = true;
+}
+
+// Initial fetch on page load
+document.addEventListener('DOMContentLoaded', function () {
+
+});
+
+
+function submitButtonClickHandler() {
+    document.getElementById('submitButton').addEventListener('click', function(){
+        console.log("Button works!");
+        let textBox1 = document.getElementById('textBox1');
+        let text = textBox1.value
+        if (text !== ""){
+            textBox1.value = 'Sending Request...';
+
+            // Prepare the data to send
+            const data = { textBox1: text };
+
+            // Send a POST request using Fetch API
+            fetch('http://localhost:8080/home/submitFormData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data received from server:', data);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the request:', error);
+                });
+        }else  {
+            textBox1.value = 'Please enter a value';
+        }
+
+    });
+}
+
+function submitFormData(){
+    // Retrieve form data
+    const form = document.getElementById('myForm');
+    const formData = new FormData(form);
+
+    // Example: Log form data to the console
+    for (let [name, value] of formData) {
+        console.log(`${name}: ${value}`);
+    }
+
+    // Example: Send form data to the backend using fetch API
+    fetch('http://localhost:8080/submit', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Form submission successful:', data);
+            // Handle response from the backend if needed
+        })
+        .catch(error => {
+            console.error('Error submitting form:', error);
+        });
 }
 
 // Add event listeners for links
@@ -216,47 +357,4 @@ document.getElementById('linkPatients').addEventListener('click', function(event
 document.getElementById('linkTransactions').addEventListener('click', function(event) {
     event.preventDefault(); // Prevent default link behavior
     fetchMedicalTransactionData(); // Fetch medical transaction data
-});
-
-document.getElementById('linkGpt').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent default link behavior
-    // Remove the table
-    const table = document.getElementById('hospitalTable');
-    if (table) table.style.display = 'none';
-    // Add textboxes
-    addTextBoxes();
-    // Update flag
-    isGptClicked = true;
-});
-
-// Add textboxes function
-function addTextBoxes() {
-    // Create textboxes
-    const textBox1 = document.createElement('input');
-    textBox1.type = 'text';
-    textBox1.className = 'form-control mt-2';
-    textBox1.placeholder = 'Textbox 1';
-    textBox1.id = 'textBox1';
-
-    const textBox2 = document.createElement('input');
-    textBox2.type = 'text';
-    textBox2.className = 'form-control mt-2';
-    textBox2.placeholder = 'Textbox 2';
-    textBox2.id = 'textBox2';
-
-    // Add textboxes to the container
-    const container = document.querySelector('.col-md-9');
-    if (!container) return; // Exit if container is null
-    container.appendChild(textBox1);
-    container.appendChild(textBox2);
-
-    // Disable textboxes
-    textBox1.disabled = true;
-    textBox2.disabled = true;
-}
-
-// Initial fetch on page load
-document.addEventListener('DOMContentLoaded', function () {
-    // Fetch initial data
-    fetchMedicalTransactionData();
 });
