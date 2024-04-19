@@ -8,6 +8,6 @@ public class Medical_Transaction {
     private int Medical_TransactionID;
     private Date Date_Filled;
     private String NDC;
-    private int RxNUmber;
+    private int RxNumber;
     private int Patient_ID;
 }

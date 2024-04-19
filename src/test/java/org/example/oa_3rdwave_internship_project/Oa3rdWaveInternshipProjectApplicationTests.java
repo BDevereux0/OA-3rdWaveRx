@@ -91,7 +91,7 @@ class Oa3rdWaveInternshipProjectApplicationTests {
 
         // idk why this works but wrapping this into a for loop stopped the
         // 429 code (Too many requests) I was getting.
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 3; i++) {
             try {
                 GptChatResponse response = webClient.post()
                         .uri(apiUrl)
@@ -99,7 +99,6 @@ class Oa3rdWaveInternshipProjectApplicationTests {
                         .retrieve()
                         .bodyToMono(GptChatResponse.class)
                         .block();
-
 
                 System.out.println(response);
             } catch (WebClientResponseException.TooManyRequests ex) {
@@ -109,6 +108,7 @@ class Oa3rdWaveInternshipProjectApplicationTests {
                 ex.printStackTrace();
             }
         }
+       
     }
 
 

@@ -3,8 +3,8 @@ const pageSize = 25; // Records per page
 let medicalTransactionData = []; // Array to store all medical transaction data
 let isGptClicked = false; // Flag to track if "Gpt" link is clicked
 
+// Function to fetch hospital data from the API
 function fetchHospitalData() {
-    // Fetch hospitals data from the API
     fetch('http://localhost:8080/api/hospitals')
         .then(response => {
             if (!response.ok) {
@@ -14,21 +14,17 @@ function fetchHospitalData() {
             return response.json(); // Parse the JSON response
         })
         .then(data => {
-            // Process hospital data and populate table
             populateHospitalTable(data);
-            // Re-enable table if previously disabled by "Gpt" link
             if (isGptClicked) enableTable();
         })
         .catch(error => {
             console.error('There was a problem with fetching hospital data:', error);
         });
-
-    // Remove textboxes if they exist
     removeTextBoxes();
 }
 
+// Function to fetch patient data from the API
 function fetchPatientData() {
-    // Fetch patient data from the API
     fetch('http://localhost:8080/api/patients')
         .then(response => {
             if (!response.ok) {
@@ -38,24 +34,20 @@ function fetchPatientData() {
             return response.json(); // Parse the JSON response
         })
         .then(data => {
-            // Process patient data and populate table
             populatePatientTable(data);
-            // Re-enable table if previously disabled by "Gpt" link
             if (isGptClicked) enableTable();
         })
         .catch(error => {
             console.error('There was a problem with fetching patient data:', error);
         });
-
-    // Remove textboxes if they exist
     removeTextBoxes();
 }
 
+// Function to fetch medical transaction data from the API
 function fetchMedicalTransactionData() {
     const startIndex = (currentPageNumber - 1) * pageSize;
     const apiUrl = `http://localhost:8080/api/transactions?startIndex=${startIndex}&pageSize=${pageSize}`;
 
-    // Fetch medical transaction data from the API
     fetch(apiUrl)
         .then(response => {
             if (!response.ok) {
@@ -65,173 +57,166 @@ function fetchMedicalTransactionData() {
             return response.json(); // Parse the JSON response
         })
         .then(data => {
-            // Store the fetched data
             medicalTransactionData = data;
-
-            // Process medical transaction data and populate table
             populateMedicalTransactionTable();
-
-            // Enable or disable pagination buttons based on current page number
             updatePaginationButtons();
-
-            // Re-enable table if previously disabled by "Gpt" link
             if (isGptClicked) enableTable();
         })
         .catch(error => {
             console.error('There was a problem with fetching medical transaction data:', error);
         });
-
-    // Remove textboxes if they exist
     removeTextBoxes();
 }
 
+// Function to populate hospital table
 function populateHospitalTable(data) {
     const tableBody = document.querySelector('#hospitalTable tbody');
     if (!tableBody) return; // Exit if table body is null
     tableBody.innerHTML = ''; // Clear existing table rows
 
-    // Add rows to the table body
-    data.forEach(hospitalData => {
+    data.forEach((hospitalData, index) => {
+        if (index === 0) {
+            const headerRow = document.createElement('tr');
+            Object.keys(hospitalData).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            tableBody.appendChild(headerRow);
+        }
+
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${hospitalData.hospital_ID}</td>
-            <td>${hospitalData.hospital_Name}</td>
-            <td>${hospitalData.hospital_Type_ID}</td>
-            <td>${hospitalData.hospital_TeachCenter ? 'Yes' : 'No'}</td>
-            <td>${hospitalData.hospital_PhoneNumber}</td>
-            <td>${hospitalData.hospital_Address}</td>
-        `;
+        Object.values(hospitalData).forEach(value => {
+            const td = document.createElement('td');
+            td.textContent = value;
+            row.appendChild(td);
+        });
         tableBody.appendChild(row);
     });
 }
 
+// Function to populate patient table
 function populatePatientTable(data) {
     const tableBody = document.querySelector('#hospitalTable tbody');
     if (!tableBody) return; // Exit if table body is null
     tableBody.innerHTML = ''; // Clear existing table rows
 
-    // Add rows to the table body
+    if (data.length > 0) {
+        const headerRow = document.createElement('tr');
+        Object.keys(data[0]).forEach(key => {
+            const th = document.createElement('th');
+            th.textContent = key;
+            headerRow.appendChild(th);
+        });
+        tableBody.appendChild(headerRow);
+    }
+
     data.forEach(patientData => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${patientData.patientID}</td>
-            <td>${patientData.firstName}</td>
-            <td>${patientData.lastName}</td>
-            <td>${patientData.dateOfBirth}</td>
-            <td>${patientData.gender}</td>
-            <td>${patientData.address}</td>
-            <td>${patientData.rxNumber_IDI}</td>
-            <td>${patientData.phoneNumber}</td>
-            <td>${patientData.email}</td>
-            <td>${patientData.emergencyContact}</td>
-            <td>${patientData.bloodType}</td>
-            <td>${patientData.allergies}</td>
-            <td>${patientData.medicalHistory}</td>
-            <td>${patientData.primaryCarePhysician}</td>
-            <td>${patientData.insuranceProvider}</td>
-            <td>${patientData.insurancePolicyNumber}</td>
-            <td>${patientData.nextOfKin}</td>
-            <td>${patientData.maritalStatus}</td>
-            <td>${patientData.occupation}</td>
-            <td>${patientData.language}</td>
-            <td>${patientData.ethnicity}</td>
-            <td>${patientData.religion}</td>
-            <td>${patientData.dateAdmitted}</td>
-            <td>${patientData.dischargeDate}</td>
-            <td>${patientData.roomNumber}</td>
-            <td>${patientData.hospitalId}</td>
-        `;
+        Object.values(patientData).forEach(value => {
+            const td = document.createElement('td');
+            td.textContent = value;
+            row.appendChild(td);
+        });
         tableBody.appendChild(row);
     });
 }
 
+// Function to populate medical transaction table
 function populateMedicalTransactionTable() {
     const tableBody = document.querySelector('#hospitalTable tbody');
     if (!tableBody) return; // Exit if table body is null
-    // Clear existing table rows
-    tableBody.innerHTML = '';
+    tableBody.innerHTML = ''; // Clear existing table rows
 
-    // Calculate start and end index for the current page
-    const startIndex = (currentPageNumber - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, medicalTransactionData.length);
+    // Ensure medicalTransactionData is not empty
+    if (medicalTransactionData.length === 0) return;
 
-    // Add rows to the table body
-    for (let i = startIndex; i < endIndex; i++) {
-        const transactionData = medicalTransactionData[i];
+    // Create header row
+    const headerRow = document.createElement('tr');
+    Object.keys(medicalTransactionData[0]).forEach(key => {
+        const th = document.createElement('th');
+        th.textContent = key;
+        headerRow.appendChild(th);
+    });
+    tableBody.appendChild(headerRow);
+
+    // Populate table with data
+    medicalTransactionData.forEach(transactionData => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${transactionData.rxNumber}</td>
-            <td>${transactionData.patient_ID}</td>
-            <td>${transactionData.date_Filled}</td>
-            <td>${transactionData.medical_TransactionID}</td>
-            <td>${transactionData.ndc}</td>
-        `;
+        Object.values(transactionData).forEach(value => {
+            const td = document.createElement('td');
+            td.textContent = value;
+            row.appendChild(td);
+        });
         tableBody.appendChild(row);
-    }
+    });
 }
 
-function updatePaginationButtons() {
-    // Enable or disable previous button based on current page number
-    const prevButton = document.getElementById('prevButton');
-    if (currentPageNumber <= 1) {
-        prevButton.disabled = true;
-    } else {
-        prevButton.disabled = false;
-    }
-
-    // Enable or disable next button based on current page number and total number of records
-    const nextButton = document.getElementById('nextButton');
-    if (currentPageNumber * pageSize >= medicalTransactionData.length) { // Assuming 5000 total records
-        nextButton.disabled = true;
-    } else {
-        nextButton.disabled = false;
-    }
-}
-
-// Remove textboxes function
+// Function to remove textboxes if they exist
 function removeTextBoxes() {
     const textBox1 = document.getElementById('textBox1');
     const textBox2 = document.getElementById('textBox2');
     if (textBox1) textBox1.remove();
     if (textBox2) textBox2.remove();
+    const button = document.getElementById('submitButton');
+    if (button) button.remove();
 }
 
-// Enable table function
+// Function to update pagination buttons
+function updatePaginationButtons() {
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    if (!prevButton || !nextButton) return;
+
+    prevButton.disabled = currentPageNumber <= 1;
+    nextButton.disabled = currentPageNumber * pageSize >= medicalTransactionData.length;
+}
+
+// Function to remove textboxes if they exist
+function removeTextBoxes() {
+    const textBox1 = document.getElementById('textBox1');
+    const textBox2 = document.getElementById('textBox2');
+    if (textBox1) textBox1.remove();
+    if (textBox2) textBox2.remove();
+    const button = document.getElementById('submitButton');
+    if (button) button.remove();
+}
+
+// Function to enable table
 function enableTable() {
     const table = document.getElementById('hospitalTable');
     if (table) table.style.display = 'table';
 }
 
-// Add event listeners for links
-document.getElementById('linkHospitals').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent default link behavior
-    fetchHospitalData(); // Fetch hospital data
-});
-
-document.getElementById('linkPatients').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent default link behavior
-    fetchPatientData(); // Fetch patient data
-});
-
-document.getElementById('linkTransactions').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent default link behavior
-    fetchMedicalTransactionData(); // Fetch medical transaction data
-});
-
-document.getElementById('linkGpt').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent default link behavior
-    // Remove the table
+// Event listener for "Gpt" link
+document.getElementById('linkGpt').addEventListener('click', function (event) {
+    event.preventDefault();
     const table = document.getElementById('hospitalTable');
     if (table) table.style.display = 'none';
-    // Add textboxes
-    addTextBoxes();
-    // Update flag
+    addFormAndTextBoxes();
+    enableTextBox1();
+    submitButtonClickHandler();
     isGptClicked = true;
 });
 
-// Add textboxes function
-function addTextBoxes() {
-    // Create textboxes
+// Function to enable textbox1
+function enableTextBox1() {
+    const textBox1 = document.getElementById('textBox1');
+    if (textBox1) textBox1.disabled = false;
+
+    const button = document.getElementById('submitButton');
+    if (button) button.disabled = false;
+}
+
+// Function to add textboxes and button
+function addFormAndTextBoxes() {
+    const form = document.createElement('form');
+    form.id = 'myForm';
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        submitFormData();
+    });
+
     const textBox1 = document.createElement('input');
     textBox1.type = 'text';
     textBox1.className = 'form-control mt-2';
@@ -244,19 +229,94 @@ function addTextBoxes() {
     textBox2.placeholder = 'Textbox 2';
     textBox2.id = 'textBox2';
 
-    // Add textboxes to the container
     const container = document.querySelector('.col-md-9');
-    if (!container) return; // Exit if container is null
+    if (!container) return;
     container.appendChild(textBox1);
     container.appendChild(textBox2);
 
-    // Disable textboxes
+    const button = document.createElement('button');
+    button.textContent = 'Submit';
+    button.className = 'btn btn-primary mt-2';
+    button.id = 'submitButton';
+
+    container.appendChild(button);
+
     textBox1.disabled = true;
     textBox2.disabled = true;
+    button.disabled = true;
 }
+
+// Function to handle submit button click
+function submitButtonClickHandler() {
+    document.getElementById('submitButton').addEventListener('click', function () {
+        console.log("Button works!");
+        let textBox1 = document.getElementById('textBox1');
+        let text = textBox1.value;
+        if (text !== "") {
+            textBox1.value = 'Sending Request...';
+            const data = {textBox1: text};
+            fetch('http://localhost:8080/home/submitFormData', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data received from server:', data);
+                })
+                .catch(error => {
+                    console.error('There was a problem with the request:', error);
+                });
+        } else {
+            textBox1.value = 'Please enter a value';
+        }
+    });
+}
+
+// Function to submit form data
+function submitFormData() {
+    const form = document.getElementById('myForm');
+    const formData = new FormData(form);
+
+    for (let [name, value] of formData) {
+        console.log(`${name}: ${value}`);
+    }
+
+    fetch('http://localhost:8080/submit', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Form submission successful:', data);
+        })
+        .catch(error => {
+            console.error('Error submitting form:', error);
+        });
+}
+
+// Event listeners for links
+document.getElementById('linkHospitals').addEventListener('click', function (event) {
+    event.preventDefault();
+    fetchHospitalData();
+});
+
+document.getElementById('linkPatients').addEventListener('click', function (event) {
+    event.preventDefault();
+    fetchPatientData();
+});
+
+document.getElementById('linkTransactions').addEventListener('click', function (event) {
+    event.preventDefault();
+    fetchMedicalTransactionData();
+});
 
 // Initial fetch on page load
 document.addEventListener('DOMContentLoaded', function () {
-    // Fetch initial data
-    fetchMedicalTransactionData();
+    fetchHospitalData();
 });
