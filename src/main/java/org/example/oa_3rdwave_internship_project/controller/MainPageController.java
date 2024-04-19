@@ -5,7 +5,6 @@ import org.example.oa_3rdwave_internship_project.databaseEntities.Patient;
 import org.example.oa_3rdwave_internship_project.gpt.GptChatRequest;
 import org.example.oa_3rdwave_internship_project.gpt.GptChatResponse;
 import org.example.oa_3rdwave_internship_project.gpt.OpenAIService;
-import org.example.oa_3rdwave_internship_project.models.FrontEndFormRequest;
 import org.example.oa_3rdwave_internship_project.promptBuilder.DatabaseLists;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,11 +55,11 @@ public class MainPageController {
         GptChatResponse response = openAIService.chatWithGPT(messages);
         String message = extractMessage(response);
 
-
-
+        JSONObject jsonResponse = new JSONObject();
+        jsonResponse.put("message", message);
 
         // Return a success response
-        return ResponseEntity.ok(message);
+        return ResponseEntity.ok(jsonResponse.toString());
     }
 
 

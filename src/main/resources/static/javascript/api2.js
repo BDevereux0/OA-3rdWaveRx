@@ -1,5 +1,5 @@
 let currentPageNumber = 1; // Variable to keep track of the current page number
-const pageSize = 25; // Records per page
+const pageSize = 100; // Records per page
 let medicalTransactionData = []; // Array to store all medical transaction data
 let isGptClicked = false; // Flag to track if "Gpt" link is clicked
 
@@ -152,16 +152,6 @@ function populateMedicalTransactionTable() {
     });
 }
 
-// Function to remove textboxes if they exist
-function removeTextBoxes() {
-    const textBox1 = document.getElementById('textBox1');
-    const textBox2 = document.getElementById('textBox2');
-    if (textBox1) textBox1.remove();
-    if (textBox2) textBox2.remove();
-    const button = document.getElementById('submitButton');
-    if (button) button.remove();
-}
-
 // Function to update pagination buttons
 function updatePaginationButtons() {
     const prevButton = document.getElementById('prevButton');
@@ -169,7 +159,10 @@ function updatePaginationButtons() {
     if (!prevButton || !nextButton) return;
 
     prevButton.disabled = currentPageNumber <= 1;
-    nextButton.disabled = currentPageNumber * pageSize >= medicalTransactionData.length;
+
+    // Calculate total number of pages
+    const totalPages = Math.ceil(medicalTransactionData.length / pageSize);
+    nextButton.disabled = currentPageNumber >= totalPages;
 }
 
 // Function to remove textboxes if they exist
@@ -246,7 +239,6 @@ function addFormAndTextBoxes() {
     button.disabled = true;
 }
 
-// Function to handle submit button click
 function submitButtonClickHandler() {
     document.getElementById('submitButton').addEventListener('click', function () {
         console.log("Button works!");
@@ -268,6 +260,14 @@ function submitButtonClickHandler() {
                 })
                 .then(data => {
                     console.log('Data received from server:', data);
+                    // Update textBox2 with the received data
+                    let textBox2 = document.getElementById('textBox2');
+                    textBox2.setAttribute('wrap', 'soft');
+                    textBox2.value = data.message;
+
+
+                    // Autoresize textBox2
+                    autoResizeTextarea(textBox2);
                 })
                 .catch(error => {
                     console.error('There was a problem with the request:', error);
@@ -276,6 +276,14 @@ function submitButtonClickHandler() {
             textBox1.value = 'Please enter a value';
         }
     });
+}
+
+function autoResizeTextarea(element) {
+    element.style.height = 'auto'; // Reset the height to auto
+    element.style.height = (element.scrollHeight) + 'px'; // Set the height to the scroll height
+
+    // Scroll to the bottom
+    element.scrollTop = element.scrollHeight;
 }
 
 // Function to submit form data
